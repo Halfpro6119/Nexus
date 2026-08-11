@@ -1,0 +1,29 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "services": {
+    "frontend": {
+      "root": ".",
+      "framework": "nextjs"
+    },
+    "screenshot": {
+      "root": "services/screenshot",
+      "runtime": "container"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/screenshot(/.*)?",
+      "destination": {
+        "type": "service",
+        "service": "screenshot"
+      }
+    },
+    {
+      "source": "/(.*)",
+      "destination": {
+        "type": "service",
+        "service": "frontend"
+      }
+    }
+  ]
+}

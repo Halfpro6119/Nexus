@@ -2,7 +2,9 @@ export interface WebsiteScreenshots { desktop: string; mobile: string; mimeType:
 
 function configuredEndpoint() {
   const endpoint = process.env.SCREENSHOT_ENDPOINT;
-  return endpoint && !/your-cloud-run|example|placeholder/i.test(endpoint) ? endpoint : null;
+  if (endpoint && !/your-cloud-run|example|placeholder/i.test(endpoint)) return endpoint;
+  if (process.env.VERCEL === "1" && process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}/api/screenshot`;
+  return null;
 }
 
 function requiresHostedBrowser(): boolean {

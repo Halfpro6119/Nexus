@@ -1,15 +1,13 @@
 # Deploy Nexus on Vercel
 
-Nexus is a Next.js application and can be hosted on Vercel. Browser automation is intentionally kept outside Vercel functions: deploy the included Nexus scraper and screenshot service to Cloud Run.
+Nexus uses Vercel Services: the Next.js frontend runs at `/`, and the included Docker-backed Playwright screenshot service runs at `/api/screenshot`. Google Maps discovery remains in the Nexus-owned Cloud Run Job.
 
 ## 1. Import the repository
 
-In Vercel, import `Halfpro6119/Nexus`. Keep the defaults:
+In Vercel, import `Halfpro6119/Nexus` and set the project framework to **Services**. The repository `vercel.json` builds both services and routes them under one deployment URL.
 
-- Framework: Next.js
-- Build command: `npm run build`
-- Install command: `npm ci`
-- Output directory: leave empty
+- Frontend service: Next.js from the repository root
+- Screenshot service: Docker container from `services/screenshot`
 
 ## 2. Add production environment variables
 
@@ -26,10 +24,7 @@ Required for the core application:
 - `NEXT_PUBLIC_APP_URL=https://your-production-domain`
 - `OAUTH_STATE_SECRET` - a long random value
 
-Required for hosted screenshots and website audits:
-
-- `SCREENSHOT_ENDPOINT` - the HTTPS URL of the Cloud Run screenshot service
-- `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1` - prevents Vercel from downloading a local Chromium binary; Vercel uses the Cloud Run screenshot service instead
+The screenshot service is automatically reachable at `/api/screenshot`. No `SCREENSHOT_ENDPOINT` is required on Vercel; the application automatically uses the current deployment URL. Set `SCREENSHOT_ENDPOINT` only if you intentionally want to use a separately hosted screenshot worker.
 
 Required for lead discovery on Vercel:
 
@@ -43,9 +38,9 @@ Add Gmail, Microsoft, GitHub, Google Sheets and other integration variables only
 
 Do not add `GOOGLE_APPLICATION_CREDENTIALS` to Vercel. It is a local file path. Vercel uses `GOOGLE_SERVICE_ACCOUNT_JSON` instead.
 
-## 3. Deploy the screenshot service to Cloud Run
+## 3. Deploy the Cloud Run lead scraper
 
-From the repository root, deploy the service in `services/screenshot` or use the existing scraper Cloud Run setup. Set its public HTTPS URL as `SCREENSHOT_ENDPOINT` in Vercel. The main Vercel application will not launch Playwright locally in production.
+Deploy the existing Cloud Run Job using [CLOUD_RUN_SCRAPER.md](CLOUD_RUN_SCRAPER.md). The Vercel frontend triggers this job for lead discovery; the job owns the long-running browser scraping and writes results directly to Supabase.
 
 ## 4. Configure external callbacks
 
@@ -60,6 +55,6 @@ Redeploy after adding or changing environment variables.
 
 - Vercel runs the web application and API routes.
 - The Nexus-owned Cloud Run Job runs Google Maps lead discovery for Vercel deployments and writes results to Supabase incrementally.
-- Cloud Run runs Playwright screenshots.
+- The Vercel screenshot service runs Playwright in its Docker container.
 - Supabase stores application data.
 - Vertex AI requests run from Node.js server routes using the Vercel secret service-account JSON.
