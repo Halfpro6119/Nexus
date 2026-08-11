@@ -1,5 +1,5 @@
 import express from "express";
-import { chromium } from "playwright";
+import { chromium } from "playwright-core";
 import dns from "node:dns/promises";
 import net from "node:net";
 
@@ -36,7 +36,11 @@ app.post("/", async (request, response) => {
 
     const formats = Array.isArray(request.body.formats) ? request.body.formats : [];
     const fullPage = Boolean(request.body.fullPage);
-    browser = await chromium.launch({ headless: true });
+    browser = await chromium.launch({
+      headless: true,
+      executablePath: process.env.CHROMIUM_EXECUTABLE_PATH ?? "/usr/bin/chromium",
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    });
     if (formats.includes("desktop") || formats.includes("mobile")) {
       const [desktop, mobile] = await Promise.all([
         capture(browser, target.href, { width: 1440, height: 1000 }, false, fullPage),
