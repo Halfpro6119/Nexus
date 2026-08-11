@@ -5,6 +5,10 @@ function configuredEndpoint() {
   return endpoint && !/your-cloud-run|example|placeholder/i.test(endpoint) ? endpoint : null;
 }
 
+function requiresHostedBrowser(): boolean {
+  return process.env.VERCEL === "1";
+}
+
 export async function captureWebsiteScreenshots(url: string): Promise<WebsiteScreenshots> {
   const endpoint = configuredEndpoint();
   if (endpoint) {
@@ -14,6 +18,9 @@ export async function captureWebsiteScreenshots(url: string): Promise<WebsiteScr
     const desktop = data.desktopBase64 ?? data.imageBase64;
     if (!desktop) throw new Error("Screenshot service returned no image");
     return { desktop, mobile: data.mobileBase64 ?? desktop, mimeType: "image/jpeg" };
+  }
+  if (requiresHostedBrowser()) {
+    throw new Error("SCREENSHOT_ENDPOINT is required on Vercel. Deploy the included screenshot service to Cloud Run and set its HTTPS URL.");
   }
   const { chromium } = await import("playwright");
   const browser = await chromium.launch({ headless: true });
@@ -33,6 +40,10 @@ export async function captureWebsiteScreenshots(url: string): Promise<WebsiteScr
 }
 
 export async function captureLeanWebsiteScreenshots(url: string): Promise<WebsiteScreenshots> {
+  if (configuredEndpoint()) return captureWebsiteScreenshots(url);
+  if (requiresHostedBrowser()) {
+    throw new Error("SCREENSHOT_ENDPOINT is required on Vercel. Deploy the included screenshot service to Cloud Run and set its HTTPS URL.");
+  }
   const { chromium } = await import("playwright");
   const browser = await chromium.launch({ headless: true });
   try {

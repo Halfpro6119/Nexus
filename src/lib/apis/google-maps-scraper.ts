@@ -1,4 +1,4 @@
-import { chromium, type Browser, type Page } from "playwright";
+import type { Browser, Page } from "playwright";
 import type { Lead, ScraperProgress } from "../../types";
 import { normalizeAddress, normalizePhone } from "../lead-identity";
 import { generateText } from "../ai/gemini";
@@ -258,6 +258,14 @@ async function scrapeLinks(browser: Browser, links: string[], niche: string, loc
 export async function searchPlacesCampaign(niche: string, location: string, requestedCountOrOptions: number | ScraperOptions, reporter?: ProgressReporter) {
   const legacyTarget = typeof requestedCountOrOptions === "number" ? Math.min(500, Math.max(1, requestedCountOrOptions)) : undefined;
   const mode: ScraperMode = typeof requestedCountOrOptions === "number" ? "single" : requestedCountOrOptions.mode;
+  if (process.env.VERCEL === "1") {
+    const { dispatchCloudRunScraper } = await import("./cloud-run-scraper");
+    report(reporter, { phase: "campaign", level: "info", message: "Vercel deployment detected: dispatching the Nexus scraper to Cloud Run." });
+    const execution = await dispatchCloudRunScraper(niche, location, mode);
+    report(reporter, { phase: "campaign", level: "success", message: `Cloud Run job queued: ${execution}. New leads will appear in Supabase as they are captured.` });
+    return { leads: [], areas: [location], sources: ["cloud_run_job"], mode };
+  }
+  const { chromium } = await import("playwright");
   const browser = await chromium.launch({ headless: true });
   try {
     const areas = mode === "multi" ? await discoverProminentAreas(location, reporter) : [location];

@@ -1,10 +1,40 @@
 import { GoogleGenAI } from "@google/genai";
 
+type VertexServiceAccount = {
+  type?: string;
+  project_id?: string;
+  private_key_id?: string;
+  private_key?: string;
+  client_email?: string;
+  client_id?: string;
+  token_uri?: string;
+};
+
+function inlineVertexCredentials(): VertexServiceAccount | undefined {
+  const raw = process.env.GOOGLE_SERVICE_ACCOUNT_JSON?.trim();
+  if (!raw) return undefined;
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      return parsed as VertexServiceAccount;
+    }
+  } catch {
+    throw new Error("GOOGLE_SERVICE_ACCOUNT_JSON must contain a valid service-account JSON object.");
+  }
+  throw new Error("GOOGLE_SERVICE_ACCOUNT_JSON must contain a valid service-account JSON object.");
+}
+
 function getVertexClient() {
   const project = process.env.GOOGLE_CLOUD_PROJECT;
   const location = process.env.GOOGLE_CLOUD_LOCATION ?? "global";
   if (!project) throw new Error("Vertex AI is not configured. Add GOOGLE_CLOUD_PROJECT to .env.local.");
-  return new GoogleGenAI({ vertexai: true, project, location });
+  const credentials = inlineVertexCredentials();
+  return new GoogleGenAI({
+    vertexai: true,
+    project,
+    location,
+    ...(credentials ? { googleAuthOptions: { credentials } } : {}),
+  });
 }
 
 function vertexError(error: unknown) {
