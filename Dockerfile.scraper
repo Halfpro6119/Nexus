@@ -1,0 +1,8 @@
+FROM mcr.microsoft.com/playwright:v1.62.1-noble
+WORKDIR /app
+ENV NODE_ENV=production
+COPY package.json package-lock.json ./
+RUN npm ci --omit=optional
+COPY tsconfig.json ./
+COPY src ./src
+CMD ["npm", "run", "scrape:job"]

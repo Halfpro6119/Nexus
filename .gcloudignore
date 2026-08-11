@@ -1,0 +1,13 @@
+.gcloudignore
+.git
+.gitignore
+.next
+node_modules
+.env
+.env.*
+!.env.example
+*.log
+/frontend/
+/backend/
+/services/
+/supabase/

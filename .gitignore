@@ -1,0 +1,14 @@
+.next/
+node_modules/
+
+# Separate/generated applications are not part of the Nexus Next.js process.
+project/
+frontend/
+backend/
+lindy-automation-selenium/
+vendor/
+
+# Local secrets and development logs.
+.env.local
+*.log
+tsconfig.tsbuildinfo

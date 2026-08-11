@@ -1,0 +1,3 @@
+import type { Config } from "tailwindcss";
+const config: Config = { darkMode:["class"], content:["./src/**/*.{js,ts,jsx,tsx,mdx}"], theme:{extend:{colors:{background:"#0B0F19",surface:"#0F172A",surfaceHover:"#1E293B",card:"rgba(15,23,42,.75)",primary:{DEFAULT:"#10B981",hover:"#059669"},secondary:{DEFAULT:"#06B6D4",hover:"#0891B2"},accent:"#3B82F6",danger:"#EF4444",border:"#1E293B"},fontFamily:{mono:["var(--font-mono)","monospace"],sans:["var(--font-sans)","sans-serif"]},backgroundImage:{"cyber-grid":"linear-gradient(to right,rgba(6,182,212,.05) 1px,transparent 1px),linear-gradient(to bottom,rgba(6,182,212,.05) 1px,transparent 1px)"}}},plugins:[]};
+export default config;

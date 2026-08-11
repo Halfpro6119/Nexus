@@ -1,0 +1,1 @@
+import{NextRequest,NextResponse}from"next/server";export async function POST(req:NextRequest){try{const payload=await req.json() as Record<string,unknown>;return NextResponse.json({data:{accepted:true,eventId:String(payload.historyId??payload.subscriptionId??crypto.randomUUID())}})}catch{return NextResponse.json({error:"Invalid webhook payload"},{status:400})}}
